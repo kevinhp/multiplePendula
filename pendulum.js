@@ -42,8 +42,8 @@ class Pendulum {
     }
 
     update() {
-        var h = 0.02;
-        var n = 30;
+        var h = 0.05;
+        var n = 20;
         for (var i = 0; i < n; i++) {
             this.rk4Step(h);
 //             this.euler(h/4);
@@ -66,6 +66,9 @@ class Pendulum {
             x[i+1] = x[i] + this.lens[i]*math.cos(this.ang[i]);
             y[i+1] = y[i] + this.lens[i]*math.sin(this.ang[i]);
         }
+        if (frameCount==1) {
+            this.getEnergy(y);
+        }
         if (b) {
             this.histCount++;
             this.posHistory.push([x[this.n],y[this.n]]);
@@ -73,25 +76,8 @@ class Pendulum {
                 this.posHistory.shift();
             }
 
+            this.getEnergy(y);        
         }
-        
-        // Compute energy
-        //Kinetic:
-        var k = 0;
-        var v = 0;
-        for (var i = 0; i < this.n; i++) {
-            var sumr = 0;
-            var sumq = 0;
-            for (var j = 0; j <= i; j++) {
-                sumr += this.lens[j]*this.angd[j]*sin(this.ang[j] - this.ang[i]);
-                sumq += this.lens[j]*this.angd[j]*cos(this.ang[j] - this.ang[i]);
-            }
-            k += 0.5*this.masses[i]*(sumr*sumr + sumq*sumq);
-            v -= this.masses[i]*g*y[i+1];
-        }
-        var totalEnergy = k + v;
-        document.getElementById("energy").innerHTML = "Total energy: " + totalEnergy.toFixed(6) + ", Kinetic: " + k.toFixed(6) + ", Potential: " + v.toFixed(6);
-
         // Draw lines and circles
         for (var i = 1; i <= this.n; i++) {
             stroke(200);
@@ -199,5 +185,27 @@ class Pendulum {
         }
         Y.subset(math.index(math.range(this.n,2*this.n)), Y2);
         return Y;
+    }
+
+    getEnergy(y) {
+        // Compute energy
+        //Kinetic:
+        var k = 0;
+        var v = 0;
+        for (var i = 0; i < this.n; i++) {
+            var sumr = 0;
+            var sumq = 0;
+            for (var j = 0; j <= i; j++) {
+                sumr += this.lens[j]*this.angd[j]*sin(this.ang[j] - this.ang[i]);
+                sumq += this.lens[j]*this.angd[j]*cos(this.ang[j] - this.ang[i]);
+            }
+            k += 0.5*this.masses[i]*(sumr*sumr + sumq*sumq);
+            v -= this.masses[i]*g*y[i+1];
+        }
+        var totalEnergy = k + v;
+        if (frameCount == 1) {
+            this.initialEnergy = totalEnergy;
+        }
+        document.getElementById("energy").innerHTML = "Total energy: " + totalEnergy.toFixed(6) + ", Kinetic: " + k.toFixed(6) + ", Potential: " + v.toFixed(6) + ", Change from start: " + (this.initialEnergy - totalEnergy).toFixed(6);
     }
 }
