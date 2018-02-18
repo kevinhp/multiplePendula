@@ -30,9 +30,9 @@ class Pendulum {
         this.angd = this.s.subset(math.index(math.range(this.n,2*this.n))).valueOf();
 
         this.lens = lengths;
-        var rm_scale = 10; // Proportion between mass and radius^2
+        var rm_scale = 15; // Proportion between mass and radius^2
         this.masses = masses;
-        this.rs = math.multiply(this.masses,rm_scale); // Radii
+        this.rs = math.multiply(math.sqrt(this.masses),rm_scale); // Radii
 
         this.T = math.zeros(this.n);
         this.posHistory = [];
