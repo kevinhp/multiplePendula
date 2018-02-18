@@ -40,6 +40,17 @@ class Pendulum {
         this.histCount = 0;
         
         this.integrateStep = this.rk4Step;
+
+        // Generate random color for masses
+        this.colors = [];
+        var r;
+        var b;
+        for (var i = 0; i < this.n; i++) {
+            r = Math.floor(255*Math.random());
+            b = Math.floor(255*Math.random());
+            this.colors[i] = this.canvas.color('rgba(' + r + ',255,' + b + ',0.9)');
+        }
+        this.traceColor = this.canvas.color('rgb(' + r + ',255,' + b + ')');
     }
     
     useRK4() {
@@ -64,6 +75,13 @@ class Pendulum {
         }
     }
     
+    getRodColor(t) {
+        // Make color reflect tension strength: red for tension, blue for compression and brightness for intensity
+        var intensity = math.round(150 + 50/(1 + math.exp(-t))); // Sigmoid function amplified to 0-255
+        var color = 'rgba(' + (t<0)*intensity + ',0,' + (t>=0)*intensity + ',1)';
+        return color;
+    }
+
     show() {
         // Get XY coordinates
         var x = [0];
@@ -85,7 +103,8 @@ class Pendulum {
             this.posHistory.push([x[this.n],y[this.n]]);
             
             // Keep only up to 500 registers
-            if (this.posHistory.length>500) {
+            this.maxHistory = 500;
+            if (this.posHistory.length > this.maxHistory) {
                 this.posHistory.shift();
             }
             
@@ -95,25 +114,32 @@ class Pendulum {
         if (!this.canvas) {
             return;
         }
+
+        // Draw trace
+        this.canvas.noFill();
+        this.canvas.strokeWeight(1);
+        for (var i = 1; i < this.posHistory.length; i++) {
+            var opac = Math.floor(255*(this.maxHistory - this.posHistory.length + i)/this.posHistory.length);
+            this.traceColor.setAlpha(opac);
+            this.canvas.stroke(this.traceColor);
+            this.canvas.line(this.posHistory[i-1][0],this.posHistory[i-1][1],this.posHistory[i][0],this.posHistory[i][1]);
+        }
+
         // Draw pendula lines and circles
         for (var i = 1; i <= this.n; i++) {
-            this.canvas.stroke(200);
+            // Rod
+            this.canvas.noFill();
+            var color = this.getRodColor(this.T.valueOf()[i-1]);
+            //console.log(color);
+            this.canvas.stroke(color);
             this.canvas.strokeWeight(2);
             this.canvas.line(x[i-1],y[i-1],x[i],y[i]);
+            // Mass
             this.canvas.noStroke();
-            this.canvas.fill('rgba(0,0,255,0.8)');
+            this.canvas.fill(this.colors[i-1]);
             this.canvas.ellipse(x[i],y[i],this.rs[i-1],this.rs[i-1]);
         }
         
-        // Draw trace
-        this.canvas.noFill();
-        this.canvas.stroke('rgba(255,0,0,1)');
-        this.canvas.strokeWeight(1);
-        this.canvas.beginShape();
-        for (var i = 1; i < this.posHistory.length; i++) {
-            this.canvas.vertex(this.posHistory[i][0],this.posHistory[i][1]);
-        }
-        this.canvas.endShape();
     }
     
     eulerStep(h) {
@@ -228,6 +254,18 @@ class Pendulum {
             Y2 = Number(Y2[0]);
         }
         Y.subset(math.index(math.range(this.n,2*this.n)), Y2);
+        
+        // Get tensions: T = -Cinv.(ws + B.angdd + A.angd2)
+        this.T = math.multiply(
+            math.multiply(Cinv,-1) ,
+            math.add(
+                math.add(
+                    ws,
+                    math.multiply(B,Y2)
+                ),
+                math.multiply(A,angd2)
+            )
+        )
         return Y;
     }
     
