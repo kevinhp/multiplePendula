@@ -37,14 +37,23 @@ class Pendulum {
         this.T = math.zeros(this.n);
         this.posHistory = [];
         this.histCount = 0;
+
+        this.integrateStep = this.rk4Step;
+    }
+
+    useRK4() {
+        this.integrateStep = this.rk4Step;
+    }
+
+    useEuler() {
+        this.integrateStep = this.eulerStep;
     }
 
     update() {
         var h = 0.05;
         var n = 20;
         for (var i = 0; i < n; i++) {
-            this.rk4Step(h);
-//             this.euler(h/4);
+            this.integrateStep(h);
             this.ang = this.s.subset(math.index(math.range(0,this.n))).valueOf();
             this.angd = this.s.subset(math.index(math.range(this.n,2*this.n))).valueOf();
             if (this.n == 1) {
@@ -103,7 +112,7 @@ class Pendulum {
         endShape();
     }
 
-    euler(h) {
+    eulerStep(h) {
     /*
         Euler method implementation
         h: step size
