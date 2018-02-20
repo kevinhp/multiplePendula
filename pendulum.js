@@ -61,7 +61,7 @@ class Pendulum {
         this.integrateStep = this.rk4Step;
         this._traceList = [];
 
-        // Generate random color for masses
+        // Assign color for masses
         this.colors = [];
         let r;
         let b;
