@@ -6,14 +6,13 @@ var pendulaCanvas = function(p) {
     var xo;
     var yo;
     p.setup = function() {
-        p.createCanvas(1000,600);
+        p.createCanvas(1000,800);
         xo = p.width/2;
-        yo = 100;
+        yo = 400;
         g = 1;
-        //     var angles = [math.pi*0.9];
-        var angles = [math.pi*1/7,-math.pi*5/11,math.pi*1.1,0];
+        var angles = [-math.pi*2/7,-math.pi*5/11,math.pi*1.1,-math.pi*1/4];
         var lengths = [100,100,100,50];
-        var masses = [4,4,3,4];
+        var masses = [4,5,3,4];
         pl = new Pendulum(angles,lengths,masses,p);
         b = false;
         p.translate(xo,yo);
