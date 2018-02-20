@@ -13,6 +13,32 @@ let colors = [
     "#ffed6f",
 ];
 
+class Trace {
+    constructor(color, maxHistory) {
+        this.color = color;
+        this.posHistory = [];
+        this.maxHistory = maxHistory;
+    }
+    update(x,y) {
+        this.posHistory.push([x,y]);
+        while (this.posHistory.length > this.maxHistory) {
+            this.posHistory.shift();
+        }
+    }
+    draw(canvas) {
+        // Draw trace
+        canvas.noFill();
+        canvas.strokeWeight(1);
+        let color = canvas.color(this.color);
+        for (let i = 1; i < this.posHistory.length; i++) {
+            let opac = Math.floor(255*(this.maxHistory - this.posHistory.length + i)/this.maxHistory);
+            color.setAlpha(opac);
+            canvas.stroke(color);
+            canvas.line(this.posHistory[i-1][0],this.posHistory[i-1][1],this.posHistory[i][0],this.posHistory[i][1]);
+        }
+    }
+}
+
 class Pendulum {
     constructor(angles,lengths,masses,canvas) {
         if (!angles) {
@@ -54,36 +80,38 @@ class Pendulum {
         for (let i = 0; i < this.n; i++) {
             this.posHistory[i] = [];
         }
-        this.traceColor = [];
-        // Keep only up to 500 registers
+        // Keep only up to 500 registers per trace
         this.maxHistory = 500;
-
+        
         this.integrateStep = this.rk4Step;
         this._traceList = [];
-
+        this._traces = [];
+        
         // Assign color for masses
         this.colors = [];
-        let r;
-        let b;
         for (let i = 0; i < this.n; i++) {
             let j = i%(colors.length);
             this.colors[i] = this.canvas.color(colors[j]);
             this.colors[i].setAlpha(200);
-            this.traceColor[i] = this.canvas.color(colors[j]);
         }
     }
-
+    
     set traceList(list) {
+        // Clean the trace list
         this._traceList.length = 0;
-        this.posHistory.length = 0;
+        // this.posHistory.length = 0;
         for (let i = 0; i < list.length; i++) {
             if (list[i].isNumeric && list[i] >= 0 || list[i] < this.n) {
                 this._traceList.push(list[i]);
-                this.posHistory.push([]);
             }
         }
-    }
 
+        // Populate new trace array
+        for (const i of this._traceList) {
+            this._traces.push(new Trace(colors[i],this.maxHistory));
+        }
+    }
+    
     get traceList() {
         return this._traceList;
     }
@@ -116,9 +144,9 @@ class Pendulum {
         let color = 'rgba(' + (t<0)*intensity + ',0,' + (t>=0)*intensity + ',1)';
         return color;
     }
-
-    show() {
-        // Get XY coordinates
+    
+    draw() {
+        // Get XY coordinates, which are only needed when drawing
         let x = [0];
         let y = [0];
         for (let i = 0; i < this.n; i++) {
@@ -134,15 +162,9 @@ class Pendulum {
         // b = true: pendula in action. b = false: pendula paused
         // Update trace and energy only if pendula are in action
         if (b) {
-            for (let i = 0; i < this.n; i++) {
-                let j = this._traceList.findIndex((_j) => _j == i);
-                if (j >= 0) {
-                    this.posHistory[j].push([x[i+1],y[i+1]]);
-
-                    if (this.posHistory[j].length > this.maxHistory) {
-                        this.posHistory[j].shift();
-                    }
-                }
+            for (let i = 0; i < this._traceList.length; i++) {
+                const j = this._traceList[i] +1 ;
+                this._traces[i].update(x[j],y[j]);
             }
             this.getEnergy(y);        
         }
@@ -150,19 +172,10 @@ class Pendulum {
         if (!this.canvas) {
             return;
         }
-
+        
         // Draw trace
-        this.canvas.noFill();
-        this.canvas.strokeWeight(1);
-        for (let j = 0; j < this._traceList.length; j++) {
-            let k = this._traceList[j];
-            for (let i = 1; i < this.posHistory[j].length; i++) {
-                let opac = Math.floor(255*(this.maxHistory - this.posHistory[j].length + i)/this.posHistory[j].length);
-                this.traceColor[k].setAlpha(opac);
-                this.canvas.stroke(this.traceColor[k]);
-                this.canvas.line(this.posHistory[j][i-1][0],this.posHistory[j][i-1][1],this.posHistory[j][i][0],this.posHistory[j][i][1]);
-            }
-        }
+        this._traces.map((tr) => tr.draw(this.canvas));
+
         // Draw pendula lines and circles
         for (let i = 1; i <= this.n; i++) {
             // Rod
