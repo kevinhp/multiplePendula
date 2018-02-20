@@ -1,19 +1,20 @@
-var g;
-var pl; // pendulum list
-var b;
+let g;
+let pl; // pendulum list
+let b;
 
-var pendulaCanvas = function(p) {
-    var xo;
-    var yo;
+let pendulaCanvas = function(p) {
+    let xo;
+    let yo;
     p.setup = function() {
         p.createCanvas(1000,800);
         xo = p.width/2;
         yo = 400;
         g = 1;
-        var angles = [-math.pi*2/7,-math.pi*5/11,math.pi*1.1,-math.pi*1/4];
-        var lengths = [100,100,100,50];
-        var masses = [4,5,3,4];
+        let angles = [-math.pi*2/7,-math.pi*5/11,math.pi*1.1,-math.pi*1/4];
+        let lengths = [100,100,100,50];
+        let masses = [4,5,3,4];
         pl = new Pendulum(angles,lengths,masses,p);
+        pl.traceList = [1,3];
         b = false;
         p.translate(xo,yo);
         pl.show();
@@ -30,4 +31,4 @@ var pendulaCanvas = function(p) {
         b = !b;
     }
 }
-var displayCanvas = new p5(pendulaCanvas,'pendulaCanvas')
+let displayCanvas = new p5(pendulaCanvas,'pendulaCanvas')

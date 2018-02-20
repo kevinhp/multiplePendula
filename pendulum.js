@@ -31,26 +31,47 @@ class Pendulum {
         this.angd = this.s.subset(math.index(math.range(this.n,2*this.n))).valueOf();
         
         this.lens = lengths;
-        var rm_scale = 15; // Proportion between mass and radius^2
+        let rm_scale = 15; // Proportion between mass and radius^2
         this.masses = masses;
         this.rs = math.multiply(math.sqrt(this.masses),rm_scale); // Radii
         
         this.T = math.zeros(this.n);
         this.posHistory = [];
-        this.histCount = 0;
-        
+        for (let i = 0; i < this.n; i++) {
+            this.posHistory[i] = [];
+        }
+        this.traceColor = [];
+        // Keep only up to 500 registers
+        this.maxHistory = 500;
+
         this.integrateStep = this.rk4Step;
+        this._traceList = [];
 
         // Generate random color for masses
         this.colors = [];
-        var r;
-        var b;
-        for (var i = 0; i < this.n; i++) {
+        let r;
+        let b;
+        for (let i = 0; i < this.n; i++) {
             r = Math.floor(255*Math.random());
             b = Math.floor(255*Math.random());
             this.colors[i] = this.canvas.color('rgba(' + r + ',255,' + b + ',0.9)');
+            this.traceColor[i] = this.canvas.color('rgb(' + r + ',255,' + b + ')');
         }
-        this.traceColor = this.canvas.color('rgb(' + r + ',255,' + b + ')');
+    }
+
+    set traceList(list) {
+        this._traceList.length = 0;
+        this.posHistory.length = 0;
+        for (let i = 0; i < list.length; i++) {
+            if (list[i].isNumeric && list[i] >= 0 || list[i] < this.n) {
+                this._traceList.push(list[i]);
+                this.posHistory.push([]);
+            }
+        }
+    }
+
+    get traceList() {
+        return this._traceList;
     }
     
     useRK4() {
@@ -62,9 +83,9 @@ class Pendulum {
     }
     
     update() {
-        var h = 0.05;
-        var n = 20;
-        for (var i = 0; i < n; i++) {
+        let h = 0.05;
+        let n = 10;
+        for (let i = 0; i < n; i++) {
             this.integrateStep(h);
             this.ang = this.s.subset(math.index(math.range(0,this.n))).valueOf();
             this.angd = this.s.subset(math.index(math.range(this.n,2*this.n))).valueOf();
@@ -77,16 +98,16 @@ class Pendulum {
     
     getRodColor(t) {
         // Make color reflect tension strength: red for tension, blue for compression and brightness for intensity
-        var intensity = math.round(150 + 50/(1 + math.exp(-t))); // Sigmoid function amplified to 0-255
-        var color = 'rgba(' + (t<0)*intensity + ',0,' + (t>=0)*intensity + ',1)';
+        let intensity = math.round(150 + 50/(1 + math.exp(-t))); // Sigmoid function amplified to 0-255
+        let color = 'rgba(' + (t<0)*intensity + ',0,' + (t>=0)*intensity + ',1)';
         return color;
     }
 
     show() {
         // Get XY coordinates
-        var x = [0];
-        var y = [0];
-        for (var i = 0; i < this.n; i++) {
+        let x = [0];
+        let y = [0];
+        for (let i = 0; i < this.n; i++) {
             x[i+1] = x[i] + this.lens[i]*math.cos(this.ang[i]);
             y[i+1] = y[i] + this.lens[i]*math.sin(this.ang[i]);
         }
@@ -99,15 +120,16 @@ class Pendulum {
         // b = true: pendula in action. b = false: pendula paused
         // Update trace and energy only if pendula are in action
         if (b) {
-            this.histCount++; // Not using it but I thought it might be handy in the future
-            this.posHistory.push([x[this.n],y[this.n]]);
-            
-            // Keep only up to 500 registers
-            this.maxHistory = 500;
-            if (this.posHistory.length > this.maxHistory) {
-                this.posHistory.shift();
+            for (let i = 0; i < this.n; i++) {
+                let j = this._traceList.findIndex((_j) => _j == i);
+                if (j >= 0) {
+                    this.posHistory[j].push([x[i+1],y[i+1]]);
+
+                    if (this.posHistory[j].length > this.maxHistory) {
+                        this.posHistory[j].shift();
+                    }
+                }
             }
-            
             this.getEnergy(y);        
         }
         
@@ -118,18 +140,20 @@ class Pendulum {
         // Draw trace
         this.canvas.noFill();
         this.canvas.strokeWeight(1);
-        for (var i = 1; i < this.posHistory.length; i++) {
-            var opac = Math.floor(255*(this.maxHistory - this.posHistory.length + i)/this.posHistory.length);
-            this.traceColor.setAlpha(opac);
-            this.canvas.stroke(this.traceColor);
-            this.canvas.line(this.posHistory[i-1][0],this.posHistory[i-1][1],this.posHistory[i][0],this.posHistory[i][1]);
+        for (let j = 0; j < this._traceList.length; j++) {
+            let k = this._traceList[j];
+            for (let i = 1; i < this.posHistory[j].length; i++) {
+                let opac = Math.floor(255*(this.maxHistory - this.posHistory[j].length + i)/this.posHistory[j].length);
+                this.traceColor[k].setAlpha(opac);
+                this.canvas.stroke(this.traceColor[k]);
+                this.canvas.line(this.posHistory[j][i-1][0],this.posHistory[j][i-1][1],this.posHistory[j][i][0],this.posHistory[j][i][1]);
+            }
         }
-
         // Draw pendula lines and circles
-        for (var i = 1; i <= this.n; i++) {
+        for (let i = 1; i <= this.n; i++) {
             // Rod
             this.canvas.noFill();
-            var color = this.getRodColor(this.T.valueOf()[i-1]);
+            let color = this.getRodColor(this.T.valueOf()[i-1]);
             //console.log(color);
             this.canvas.stroke(color);
             this.canvas.strokeWeight(2);
@@ -147,8 +171,8 @@ class Pendulum {
         Euler method implementation
         h: step size
         */
-        var y = this.s.clone();
-        var k = this.evaluateAt(y);
+        let y = this.s.clone();
+        let k = this.evaluateAt(y);
         this.s = math.add(this.s,math.multiply(k,h));
         
     }
@@ -158,11 +182,11 @@ class Pendulum {
         4-th order Runge-Kutta implementation
         h: step size
         */
-        var y = this.s.clone();
-        var k1 = this.evaluateAt(y);
-        var k2 = this.evaluateAt(math.add(y,math.multiply(k1,0.5*h)));
-        var k3 = this.evaluateAt(math.add(y,math.multiply(k2,0.5*h)));
-        var k4 = this.evaluateAt(math.add(y,math.multiply(k3,    h)));
+        let y = this.s.clone();
+        let k1 = this.evaluateAt(y);
+        let k2 = this.evaluateAt(math.add(y,math.multiply(k1,0.5*h)));
+        let k3 = this.evaluateAt(math.add(y,math.multiply(k2,0.5*h)));
+        let k4 = this.evaluateAt(math.add(y,math.multiply(k3,    h)));
         
         this.s = math.add(this.s,math.multiply((math.add(math.add(k1,math.multiply(k2,2)), math.add(math.multiply(k3,2), k4))),h/6));
     }
@@ -184,13 +208,13 @@ class Pendulum {
         ws:    vector containing radial component of weight (respect to their local polar frame)
         t:     vector containing the value of tension by string connecting to previous particle
         */
-        var A = math.zeros(this.n,this.n); 
-        var B = math.zeros(this.n,this.n);
-        var C = math.zeros(this.n,this.n);
-        var D = math.zeros(this.n,this.n);
+        let A = math.zeros(this.n,this.n); 
+        let B = math.zeros(this.n,this.n);
+        let C = math.zeros(this.n,this.n);
+        let D = math.zeros(this.n,this.n);
         
-        var ang  = y.subset(math.index(math.range(0     ,  this.n))).valueOf();
-        var angd = y.subset(math.index(math.range(this.n,2*this.n))).valueOf();
+        let ang  = y.subset(math.index(math.range(0     ,  this.n))).valueOf();
+        let angd = y.subset(math.index(math.range(this.n,2*this.n))).valueOf();
         
         // When n == 1 ang and angd are coming out as scalars and that's breaking several things.
         // These n==1 conditionals are patches
@@ -198,23 +222,23 @@ class Pendulum {
             ang  = [this.ang];
             angd = [this.angd];
         }
-        var angd2 = math.square(angd);
+        let angd2 = math.square(angd);
         
         // Fill vectors
-        var wc;
-        var ws;
+        let wc;
+        let ws;
         if (this.n == 1) {
             wc = this.masses[0] * math.cos(ang[0]) * this.g;
             ws = this.masses[0] * math.sin(ang[0]) * this.g;
         } else {
-            var wc = math.multiply(math.dotMultiply(this.masses,math.cos(ang)),this.g);
-            var ws = math.multiply(math.dotMultiply(this.masses,math.sin(ang)),this.g);
+            wc = math.multiply(math.dotMultiply(this.masses,math.cos(ang)),this.g);
+            ws = math.multiply(math.dotMultiply(this.masses,math.sin(ang)),this.g);
         }
         
         // Fill matrices
-        for (var i = 0; i < this.n; ++i) {
+        for (let i = 0; i < this.n; ++i) {
             A.subset(math.index(i,i),this.lens[i]*this.masses[i]);
-            for (var j = 0; j < i; ++j) {
+            for (let j = 0; j < i; ++j) {
                 A.subset(math.index(i,j),this.lens[j]*this.masses[i]*math.cos(ang[j] - ang[i]));
                 B.subset(math.index(i,j),this.lens[j]*this.masses[i]*math.sin(ang[j] - ang[i]));
             }
@@ -227,17 +251,17 @@ class Pendulum {
         
         // angdd = (A+D.Cinv.B)inv.[wc - D.Cinv.ws + (B-D.Cinv.A).angd2]
         // Helpers to make angdd more readable
-        var Cinv   = math.inv(C);              // Inverse of C
-        var DCinv  = math.multiply(D,Cinv);    // D.Cinv
-        var DCinvA = math.multiply(DCinv,A);   // D.Cinv.A
-        var DCinvB = math.multiply(DCinv,B);   // D.Cinv.B
-        var tmp1   = math.add(A,DCinvB);       // (A+D.Cinv.B)
-        var tmp2   = math.subtract(B,DCinvA);  // (B-D.Cinv.A)
+        let Cinv   = math.inv(C);              // Inverse of C
+        let DCinv  = math.multiply(D,Cinv);    // D.Cinv
+        let DCinvA = math.multiply(DCinv,A);   // D.Cinv.A
+        let DCinvB = math.multiply(DCinv,B);   // D.Cinv.B
+        let tmp1   = math.add(A,DCinvB);       // (A+D.Cinv.B)
+        let tmp2   = math.subtract(B,DCinvA);  // (B-D.Cinv.A)
         
         // angdd = (tmp1)inv. (wc - DCinv.ws + tmp2.angd2)
-        var Y = math.matrix(math.zeros(y.size()));
+        let Y = math.matrix(math.zeros(y.size()));
         Y.subset(math.index(math.range(0,this.n)), math.subset(y,math.index(math.range(this.n,2*this.n))));
-        var Y2 = math.multiply(
+        let Y2 = math.multiply(
             math.inv(tmp1)
             ,
             math.add(
@@ -271,12 +295,12 @@ class Pendulum {
     
     getEnergy(y) {
         // Compute energy
-        var k = 0; // Kinetic energy
-        var v = 0; // Potential energy
-        for (var i = 0; i < this.n; i++) {
-            var sumr = 0; // Radial component of velocity
-            var sumq = 0; // Tangential component of velocity
-            for (var j = 0; j <= i; j++) {
+        let k = 0; // Kinetic energy
+        let v = 0; // Potential energy
+        for (let i = 0; i < this.n; i++) {
+            let sumr = 0; // Radial component of velocity
+            let sumq = 0; // Tangential component of velocity
+            for (let j = 0; j <= i; j++) {
                 sumr += this.lens[j]*this.angd[j]*math.sin(this.ang[j] - this.ang[i]);
                 sumq += this.lens[j]*this.angd[j]*math.cos(this.ang[j] - this.ang[i]);
             }
@@ -284,7 +308,7 @@ class Pendulum {
             v -= this.masses[i]*this.g*y[i+1]; // Negative since y points down
         }
         
-        var totalEnergy = k + v;
+        let totalEnergy = k + v;
         
         // Store initial energy
         if (this.canvas && this.canvas.frameCount == 1) {
@@ -292,6 +316,6 @@ class Pendulum {
         }
         
         // Print to document
-        document.getElementById("energy").innerHTML = "Total energy: " + totalEnergy.toFixed(6) + ", Kinetic: " + k.toFixed(6) + ", Potential: " + v.toFixed(6) + ", Change from start: " + (this.initialEnergy - totalEnergy).toFixed(6);
+        document.getElementById("energy").innerHTML = "Total energy: " + totalEnergy.toFixed(6) + ", Kinetic: " + k.toFixed(6) + ", Potential: " + v.toFixed(6) + ", Change from start: " + (totalEnergy - this.initialEnergy).toFixed(6);
     }
 }
