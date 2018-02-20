@@ -17,7 +17,7 @@ let pendulaCanvas = function(p) {
         pl.traceList = [1,3];
         b = false;
         p.translate(xo,yo);
-        pl.show();
+        pl.draw();
     }
     p.draw = function() {
         p.translate(xo,yo);
@@ -25,7 +25,7 @@ let pendulaCanvas = function(p) {
             pl.update();
         }
         p.background(50);
-        pl.show();
+        pl.draw();
     }
     p.mouseClicked = function() {
         b = !b;
