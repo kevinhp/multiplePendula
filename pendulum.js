@@ -112,7 +112,7 @@ class Pendulum {
     
     getRodColor(t) {
         // Make color reflect tension strength: red for tension, blue for compression and brightness for intensity
-        let intensity = math.round(150 + 50/(1 + math.exp(-t))); // Sigmoid function amplified to 0-255
+        let intensity = math.round(50 + 200/(1 + math.exp(-t))); // Sigmoid function amplified to 0-255
         let color = 'rgba(' + (t<0)*intensity + ',0,' + (t>=0)*intensity + ',1)';
         return color;
     }
@@ -170,7 +170,7 @@ class Pendulum {
             let color = this.getRodColor(this.T.valueOf()[i-1]);
             //console.log(color);
             this.canvas.stroke(color);
-            this.canvas.strokeWeight(2);
+            this.canvas.strokeWeight(3);
             this.canvas.line(x[i-1],y[i-1],x[i],y[i]);
             // Mass
             this.canvas.noStroke();

@@ -24,7 +24,7 @@ let pendulaCanvas = function(p) {
         if (b) {
             pl.update();
         }
-        p.background(0);
+        p.background(50);
         pl.show();
     }
     p.mouseClicked = function() {
