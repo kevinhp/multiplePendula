@@ -1,3 +1,17 @@
+let colors = [
+    "#8dd3c7",
+    "#ffffb3",
+    "#bebada",
+    "#fb8072",
+    "#80b1d3",
+    "#fdb462",
+    "#b3de69",
+    "#fccde5",
+    "#d9d9d9",
+    "#bc80bd",
+    "#ccebc5",
+    "#ffed6f",
+];
 
 class Pendulum {
     constructor(angles,lengths,masses,canvas) {
@@ -52,10 +66,10 @@ class Pendulum {
         let r;
         let b;
         for (let i = 0; i < this.n; i++) {
-            r = Math.floor(255*Math.random());
-            b = Math.floor(255*Math.random());
-            this.colors[i] = this.canvas.color('rgba(' + r + ',255,' + b + ',0.9)');
-            this.traceColor[i] = this.canvas.color('rgb(' + r + ',255,' + b + ')');
+            let j = i%(colors.length);
+            this.colors[i] = this.canvas.color(colors[j]);
+            this.colors[i].setAlpha(200);
+            this.traceColor[i] = this.canvas.color(colors[j]);
         }
     }
 
