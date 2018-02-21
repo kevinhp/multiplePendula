@@ -13,11 +13,11 @@ let pendulaCanvas = function(p) {
         let angles = [-math.pi*2/7,-math.pi*5/11,math.pi*1.1,-math.pi*1/4];
         let lengths = [100,100,100,50];
         let masses = [4,5,3,4];
-        pl = new Pendulum(angles,lengths,masses,p);
+        pl = new Pendula(angles,lengths,masses,p);
         pl.traceList = [1,3];
         b = false;
         p.translate(xo,yo);
-        pl.draw();
+        pl.draw(p);
     }
     p.draw = function() {
         p.translate(xo,yo);
@@ -25,7 +25,7 @@ let pendulaCanvas = function(p) {
             pl.update();
         }
         p.background(50);
-        pl.draw();
+        pl.draw(p);
     }
     p.mouseClicked = function() {
         b = !b;

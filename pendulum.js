@@ -40,7 +40,39 @@ class Trace {
 }
 
 class Pendulum {
-    constructor(angles,lengths,masses,canvas) {
+    constructor(radius,color) {
+        this.r = radius;
+        this.massColor = color;
+    }
+    
+    update(xo,yo,x,y,rodColor) {
+        this.xo = xo;
+        this.yo = yo;
+        this.x = x;
+        this.y = y;
+        this.rodColor = rodColor;
+    }
+    
+    draw(canvas) {
+        // Rod
+        canvas.noFill();
+        let rc = canvas.color(this.rodColor);
+        rc.setAlpha(220);
+        canvas.stroke(rc);
+        canvas.strokeWeight(3);
+        canvas.line(this.xo,this.yo,this.x,this.y);
+        
+        // Mass
+        canvas.noStroke();
+        let mc = canvas.color(this.massColor);
+        mc.setAlpha = 200;
+        canvas.fill(this.massColor);
+        canvas.ellipse(this.x,this.y,this.r,this.r);
+    }
+}
+
+class Pendula {
+    constructor(angles,lengths,masses) {
         if (!angles) {
             angles = [Math.PI/4,Math.PI/8];
             lengths = [100,100];
@@ -61,21 +93,15 @@ class Pendulum {
         if (!g) {
             this.g = 1;
         }
-        this.canvas = canvas;
+        
         this.g = g;
-        this.n = angles.length;
+        this._angles = angles;
+        this._lens = lengths;
+        this._masses = masses;
+        this._traces = [];
+        this._traceList = [];
+        this.reset();
         
-        this.s = math.matrix(angles); // State: Column vector of angles followed by their rates
-        this.s.resize([2*this.n],0);
-        this.ang = this.s.subset(math.index(math.range(0,this.n))).valueOf();
-        this.angd = this.s.subset(math.index(math.range(this.n,2*this.n))).valueOf();
-        
-        this.lens = lengths;
-        let rm_scale = 15; // Proportion between mass and radius^2
-        this.masses = masses;
-        this.rs = math.multiply(math.sqrt(this.masses),rm_scale); // Radii
-        
-        this.T = math.zeros(this.n);
         this.posHistory = [];
         for (let i = 0; i < this.n; i++) {
             this.posHistory[i] = [];
@@ -84,16 +110,39 @@ class Pendulum {
         this._maxHistory = 500;
         
         this.integrateStep = this.rk4Step;
-        this._traceList = [];
-        this._traces = [];
         
-        // Assign color for masses
-        this.colors = [];
+    }
+    
+    reset() {
+        this.n = this._angles.length;
+        this.s = math.matrix(this._angles); // State: Column vector of angles followed by their rates
+        this.s.resize([2 * this.n], 0);
+        this.ang = this.s.subset(math.index(math.range(0, this.n))).valueOf();
+        this.angd = this.s.subset(math.index(math.range(this.n, 2 * this.n))).valueOf();
+        let rm_scale = 15; // Proportion between mass and radius^2
+        this.T = math.zeros(this.n);
+        this._pendula = [];
+        this.initialEnergy = undefined;
+        this._starting = true;
+
+        // Add/remove lengths and masses as necessary
+        while (this._lens.length < this.n) {
+            this._lens.push(100);
+        }
+        while (this._masses.length < this.n) {
+            this._masses.push(4);
+        }
+        this._masses.length = this.n;
+        this._lens.length = this.n;
+
+        // Create each pendulum and assign color for masses
+        this.rs = math.multiply(math.sqrt(this._masses),rm_scale); // Radii
         for (let i = 0; i < this.n; i++) {
             let j = i%(colors.length);
-            this.colors.push(this.canvas.color(colors[j]));
-            this.colors[i].setAlpha(200);
+            this._pendula.push(new Pendulum(this.rs[i],colors[j]));
         }
+
+        this.traceList = this._traceList.slice();
     }
     
     set traceList(list) {
@@ -119,11 +168,16 @@ class Pendulum {
             tr._maxHistory = maxHistory;
         }
     }
-
+    
     get maxHistory() {
         return this._maxHistory;
     }
-
+    
+    set angleList(angles) {
+        this._angles = angles;
+        this.reset();
+    }
+    
     useRK4() {
         this.integrateStep = this.rk4Step;
     }
@@ -153,52 +207,35 @@ class Pendulum {
         return color;
     }
     
-    draw() {
+    draw(canvas) {
+        if (!canvas) {
+            console.error("Where do you want me to draw? Pass a p5.js canvas to draw.");
+            return;
+        }
         // Get XY coordinates, which are only needed when drawing
         let x = [0];
         let y = [0];
         for (let i = 0; i < this.n; i++) {
-            x[i+1] = x[i] + this.lens[i]*math.cos(this.ang[i]);
-            y[i+1] = y[i] + this.lens[i]*math.sin(this.ang[i]);
-        }
-        
-        // Pendula are currently paused initially until clicked on. This forces getting the energy for the display
-        if (this.canvas && this.canvas.frameCount==1) {
-            this.getEnergy(y);
+            x[i+1] = x[i] + this._lens[i]*math.cos(this.ang[i]);
+            y[i+1] = y[i] + this._lens[i]*math.sin(this.ang[i]);
         }
         
         // b = true: pendula in action. b = false: pendula paused
-        // Update trace and energy only if pendula are in action
-        if (b) {
+        // Update trace and energy only if pendula are in action (or it's first frame)
+        if (b || this._starting) {
             for (let i = 0; i < this._traceList.length; i++) {
                 const j = this._traceList[i] +1 ;
                 this._traces[i].update(x[j],y[j]);
             }
-            this.getEnergy(y);        
+            for (let i = 0; i < this.n; i++) {
+                this._pendula[i].update(x[i],y[i],x[i+1],y[i+1],this.getRodColor(this.T.valueOf()[i]));
+            }            
+            this.getEnergy(y);
         }
         
-        if (!this.canvas) {
-            return;
-        }
-        
-        // Draw trace
-        this._traces.map((tr) => tr.draw(this.canvas));
-
-        // Draw pendula lines and circles
-        for (let i = 1; i <= this.n; i++) {
-            // Rod
-            this.canvas.noFill();
-            let color = this.getRodColor(this.T.valueOf()[i-1]);
-            //console.log(color);
-            this.canvas.stroke(color);
-            this.canvas.strokeWeight(3);
-            this.canvas.line(x[i-1],y[i-1],x[i],y[i]);
-            // Mass
-            this.canvas.noStroke();
-            this.canvas.fill(this.colors[i-1]);
-            this.canvas.ellipse(x[i],y[i],this.rs[i-1],this.rs[i-1]);
-        }
-        
+        // Draw trace and pendula
+        this._traces.map((tr) => tr.draw(canvas));
+        this._pendula.map((p) => p.draw(canvas));
     }
     
     eulerStep(h) {
@@ -263,19 +300,19 @@ class Pendulum {
         let wc;
         let ws;
         if (this.n == 1) {
-            wc = this.masses[0] * math.cos(ang[0]) * this.g;
-            ws = this.masses[0] * math.sin(ang[0]) * this.g;
+            wc = this._masses[0] * math.cos(ang[0]) * this.g;
+            ws = this._masses[0] * math.sin(ang[0]) * this.g;
         } else {
-            wc = math.multiply(math.dotMultiply(this.masses,math.cos(ang)),this.g);
-            ws = math.multiply(math.dotMultiply(this.masses,math.sin(ang)),this.g);
+            wc = math.multiply(math.dotMultiply(this._masses,math.cos(ang)),this.g);
+            ws = math.multiply(math.dotMultiply(this._masses,math.sin(ang)),this.g);
         }
         
         // Fill matrices
         for (let i = 0; i < this.n; ++i) {
-            A.subset(math.index(i,i),this.lens[i]*this.masses[i]);
+            A.subset(math.index(i,i),this._lens[i]*this._masses[i]);
             for (let j = 0; j < i; ++j) {
-                A.subset(math.index(i,j),this.lens[j]*this.masses[i]*math.cos(ang[j] - ang[i]));
-                B.subset(math.index(i,j),this.lens[j]*this.masses[i]*math.sin(ang[j] - ang[i]));
+                A.subset(math.index(i,j),this._lens[j]*this._masses[i]*math.cos(ang[j] - ang[i]));
+                B.subset(math.index(i,j),this._lens[j]*this._masses[i]*math.sin(ang[j] - ang[i]));
             }
             C.subset(math.index(i,i),-1);
             if (i < this.n-1) { 
@@ -336,17 +373,17 @@ class Pendulum {
             let sumr = 0; // Radial component of velocity
             let sumq = 0; // Tangential component of velocity
             for (let j = 0; j <= i; j++) {
-                sumr += this.lens[j]*this.angd[j]*math.sin(this.ang[j] - this.ang[i]);
-                sumq += this.lens[j]*this.angd[j]*math.cos(this.ang[j] - this.ang[i]);
+                sumr += this._lens[j]*this.angd[j]*math.sin(this.ang[j] - this.ang[i]);
+                sumq += this._lens[j]*this.angd[j]*math.cos(this.ang[j] - this.ang[i]);
             }
-            k += 0.5*this.masses[i]*(sumr*sumr + sumq*sumq);
-            v -= this.masses[i]*this.g*y[i+1]; // Negative since y points down
+            k += 0.5*this._masses[i]*(sumr*sumr + sumq*sumq);
+            v -= this._masses[i]*this.g*y[i+1]; // Negative since y points down
         }
         
         let totalEnergy = k + v;
         
         // Store initial energy
-        if (this.canvas && this.canvas.frameCount == 1) {
+        if (!this.initialEnergy) {
             this.initialEnergy = totalEnergy;
         }
         
