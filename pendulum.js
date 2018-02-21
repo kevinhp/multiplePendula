@@ -17,11 +17,11 @@ class Trace {
     constructor(color, maxHistory) {
         this.color = color;
         this.posHistory = [];
-        this.maxHistory = maxHistory;
+        this._maxHistory = maxHistory;
     }
     update(x,y) {
         this.posHistory.push([x,y]);
-        while (this.posHistory.length > this.maxHistory) {
+        while (this.posHistory.length > this._maxHistory) {
             this.posHistory.shift();
         }
     }
@@ -31,7 +31,7 @@ class Trace {
         canvas.strokeWeight(1);
         let color = canvas.color(this.color);
         for (let i = 1; i < this.posHistory.length; i++) {
-            let opac = Math.floor(255*(this.maxHistory - this.posHistory.length + i)/this.maxHistory);
+            let opac = Math.floor(255*(this._maxHistory - this.posHistory.length + i)/this._maxHistory);
             color.setAlpha(opac);
             canvas.stroke(color);
             canvas.line(this.posHistory[i-1][0],this.posHistory[i-1][1],this.posHistory[i][0],this.posHistory[i][1]);
@@ -81,7 +81,7 @@ class Pendulum {
             this.posHistory[i] = [];
         }
         // Keep only up to 500 registers per trace
-        this.maxHistory = 500;
+        this._maxHistory = 500;
         
         this.integrateStep = this.rk4Step;
         this._traceList = [];
@@ -104,7 +104,7 @@ class Pendulum {
         for (let i = 0; i < list.length; i++) {
             if (list[i].isNumeric && list[i] >= 0 || list[i] < this.n) {
                 this._traceList.push(list[i]);
-                this._traces.push(new Trace(colors[list[i]],this.maxHistory));
+                this._traces.push(new Trace(colors[list[i]],this._maxHistory));
             }
         }
     }
@@ -113,6 +113,17 @@ class Pendulum {
         return this._traceList;
     }
     
+    set maxHistory(maxHistory) {
+        this._maxHistory = maxHistory;
+        for (let tr of this._traces) {
+            tr._maxHistory = maxHistory;
+        }
+    }
+
+    get maxHistory() {
+        return this._maxHistory;
+    }
+
     useRK4() {
         this.integrateStep = this.rk4Step;
     }
