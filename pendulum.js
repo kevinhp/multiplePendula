@@ -91,7 +91,7 @@ class Pendulum {
         this.colors = [];
         for (let i = 0; i < this.n; i++) {
             let j = i%(colors.length);
-            this.colors[i] = this.canvas.color(colors[j]);
+            this.colors.push(this.canvas.color(colors[j]));
             this.colors[i].setAlpha(200);
         }
     }
@@ -99,16 +99,13 @@ class Pendulum {
     set traceList(list) {
         // Clean the trace list
         this._traceList.length = 0;
+        this._traces.length = 0;
         // this.posHistory.length = 0;
         for (let i = 0; i < list.length; i++) {
             if (list[i].isNumeric && list[i] >= 0 || list[i] < this.n) {
                 this._traceList.push(list[i]);
+                this._traces.push(new Trace(colors[list[i]],this.maxHistory));
             }
-        }
-
-        // Populate new trace array
-        for (const i of this._traceList) {
-            this._traces.push(new Trace(colors[i],this.maxHistory));
         }
     }
     
