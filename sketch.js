@@ -23,7 +23,7 @@ let pendulaCanvas = function(p) {
         let masses = Array(angles.length).fill(1/3);
         
         // Create objects and start
-        pl = new Pendula(angles,lengths,masses,p);
+        pl = new Pendula(angles,lengths,masses);
         pl.traceList = [pl.n-1,pl.n-2]; // Draw traces for last two pendula
         b = true;
         pl.draw(p);
