@@ -79,9 +79,9 @@ class Pendula {
             masses = [2,2];
         }
         if (!lengths || lengths.length < angles.length) {
-            console.log("Not enough lengths given. Filling with unit lengths.");
+            console.log("Not enough lengths given. Filling with length 50.");
             while (lengths.length < angles.length) {
-                lengths.push(1);
+                lengths.push(50);
             }
         }
         if (!masses || masses.length < angles.length) {
@@ -95,8 +95,13 @@ class Pendula {
         }
         
         this.g = g;
+
         this._angles = angles;
         this._lens = lengths;
+        // Scale drawings so that it occupies 90% of the canvas' height or width
+        let minCanvasDim = math.min([displayCanvas.height,displayCanvas.width]);
+        this._scale = 0.45*minCanvasDim/this.maxLength(); // Change only drawing length scale, not physics scale
+        this._scaleRatio = this._scale*this.maxLength()/minCanvasDim;
         this._masses = masses;
         this._traces = [];
         this._traceList = [];
@@ -113,9 +118,13 @@ class Pendula {
         
     }
     
+    maxLength() {
+        return this._lens.reduce((a,v) => a+v);
+    }
+
     reset() {
         this.n = this._angles.length;
-        this.s = math.matrix(this._angles); // State: Column vector of angles followed by their rates
+        this.s = math.matrix(this._angles.slice()); // State: Column vector of angles followed by their rates
         this.s.resize([2 * this.n], 0);
         this.ang = this.s.subset(math.index(math.range(0, this.n))).valueOf();
         this.angd = this.s.subset(math.index(math.range(this.n, 2 * this.n))).valueOf();
@@ -126,23 +135,36 @@ class Pendula {
         this._starting = true;
 
         // Add/remove lengths and masses as necessary
+        this._masses.length = this.n;
+        this._lens.length = this.n;
         while (this._lens.length < this.n) {
-            this._lens.push(100);
+            this._lens.push(this._scale*100);
         }
         while (this._masses.length < this.n) {
             this._masses.push(4);
         }
-        this._masses.length = this.n;
-        this._lens.length = this.n;
 
         // Create each pendulum and assign color for masses
-        this.rs = math.multiply(math.sqrt(this._masses),rm_scale); // Radii
+        this.rs = math.multiply(math.sqrt(this._masses),0.5*rm_scale*this._scale); // Radii
         for (let i = 0; i < this.n; i++) {
             let j = i%(colors.length);
             this._pendula.push(new Pendulum(this.rs[i],colors[j]));
         }
 
         this.traceList = this._traceList.slice();
+    }
+
+    set scale(scale) {
+        if (this.ang) { // If scaling after started, keep current angles
+            this._angles = this.ang.slice();
+        }
+        this._scale = scale;
+        this.reset();
+        this.draw(displayCanvas);
+    }
+
+    get scale() {
+        return this._scale;
     }
     
     set traceList(list) {
@@ -176,6 +198,15 @@ class Pendula {
     set angleList(angles) {
         this._angles = angles;
         this.reset();
+    }
+
+    get angleList() {
+        return this.ang;
+    }
+
+    resize(canvas) {
+        let minCanvasDim = math.min([canvas.height,canvas.width]);
+        this.scale = this._scaleRatio * minCanvasDim/this.maxLength();
     }
     
     useRK4() {
@@ -212,12 +243,16 @@ class Pendula {
             console.error("Where do you want me to draw? Pass a p5.js canvas to draw.");
             return;
         }
+        canvas.background(50);
+        let xo = canvas.width/2;
+        let yo = canvas.height/2;
+        canvas.translate(xo,yo);
         // Get XY coordinates, which are only needed when drawing
         let x = [0];
         let y = [0];
         for (let i = 0; i < this.n; i++) {
-            x[i+1] = x[i] + this._lens[i]*math.cos(this.ang[i]);
-            y[i+1] = y[i] + this._lens[i]*math.sin(this.ang[i]);
+            x[i+1] = x[i] + this._scale*this._lens[i]*math.cos(this.ang[i]);
+            y[i+1] = y[i] + this._scale*this._lens[i]*math.sin(this.ang[i]);
         }
         
         // b = true: pendula in action. b = false: pendula paused
