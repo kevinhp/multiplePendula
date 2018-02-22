@@ -15,13 +15,18 @@ let pendulaCanvas = function(p) {
         g = 1;
         
         // Set initial angles, lengths and masses (angles.length determines the number of pendula)
-        let angles = [-math.pi*2/7,-math.pi*5/11,math.pi*1.1,-math.pi*1/4];
-        let lengths = [100,100,100,50];
-        let masses = [4,5,3,4];
+        // 4 medium pendula example:
+        // let angles = [-math.pi*2/7,-math.pi*5/11,math.pi*1.1,-math.pi*1/4];
+        // let lengths = [100,100,100,50];
+        // let masses = [4,5,3,4];
+        // 10 small pendula example
+        let angles = Array(10).fill(math.pi*(-3/8));
+        let lengths = Array(10).fill(15);
+        let masses = Array(10).fill(1/3);
         
         // Create objects and start
         pl = new Pendula(angles,lengths,masses,p);
-        pl.traceList = [1,3];
+        pl.traceList = [pl.n-1,pl.n-2]; // Draw traces for last two pendula
         b = true;
         p.translate(xo,yo);
         p.background(50);
