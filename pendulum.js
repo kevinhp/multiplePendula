@@ -105,6 +105,8 @@ class Pendula {
         this._masses = masses;
         this._traces = [];
         this._traceList = [];
+        this._integrationStepSize = 0.05;
+        this._drawEveryNUpdates = 10;
         this.reset();
         
         this.posHistory = [];
@@ -152,6 +154,26 @@ class Pendula {
         }
 
         this.traceList = this._traceList.slice();
+    }
+
+    set integrationStepSize(h) {
+        if (math.isNumeric(h) ) {
+            this._integrationStepSize = h;
+        }
+    }
+
+    get integrationStepSize() {
+        return this._integrationStepSize;
+    }
+
+    set drawEvery(n) {
+        if (math.isInteger(n) && n > 0) {
+            this._drawEveryNUpdates = math.round(n);
+        }
+    }
+
+    get drawEvery() {
+        return this._drawEveryNUpdates;
     }
 
     set scale(scale) {
@@ -218,7 +240,7 @@ class Pendula {
     }
     
     update() {
-        let h = 0.05;
+        let h = this._integrationStepSize;
         let n = 10;
         for (let i = 0; i < n; i++) {
             this.integrateStep(h);
@@ -251,8 +273,8 @@ class Pendula {
         let x = [0];
         let y = [0];
         for (let i = 0; i < this.n; i++) {
-            x[i+1] = x[i] + this._scale*this._lens[i]*math.cos(this.ang[i]);
-            y[i+1] = y[i] + this._scale*this._lens[i]*math.sin(this.ang[i]);
+            x[i+1] = x[i] + this._lens[i]*math.cos(this.ang[i]);
+            y[i+1] = y[i] + this._lens[i]*math.sin(this.ang[i]);
         }
         
         // b = true: pendula in action. b = false: pendula paused
@@ -260,10 +282,10 @@ class Pendula {
         if (b || this._starting) {
             for (let i = 0; i < this._traceList.length; i++) {
                 const j = this._traceList[i] +1 ;
-                this._traces[i].update(x[j],y[j]);
+                this._traces[i].update(this._scale*x[j],this._scale*y[j]);
             }
             for (let i = 0; i < this.n; i++) {
-                this._pendula[i].update(x[i],y[i],x[i+1],y[i+1],this.getRodColor(this.T.valueOf()[i]));
+                this._pendula[i].update(this._scale*x[i],this._scale*y[i],this._scale*x[i+1],this._scale*y[i+1],this.getRodColor(this.T.valueOf()[i]));
             }            
             this.getEnergy(y);
         }
