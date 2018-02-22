@@ -95,7 +95,7 @@ class Pendula {
         }
         
         this.g = g;
-
+        
         this._angles = angles;
         this._lens = lengths;
         // Scale drawings so that it occupies 90% of the canvas' height or width
@@ -123,7 +123,7 @@ class Pendula {
     maxLength() {
         return this._lens.reduce((a,v) => a+v);
     }
-
+    
     reset() {
         this.n = this._angles.length;
         this.s = math.matrix(this._angles.slice()); // State: Column vector of angles followed by their rates
@@ -135,7 +135,7 @@ class Pendula {
         this._pendula = [];
         this.initialEnergy = undefined;
         this._starting = true;
-
+        
         // Add/remove lengths and masses as necessary
         this._masses.length = this.n;
         this._lens.length = this.n;
@@ -145,37 +145,37 @@ class Pendula {
         while (this._masses.length < this.n) {
             this._masses.push(4);
         }
-
+        
         // Create each pendulum and assign color for masses
         this.rs = math.multiply(math.sqrt(this._masses),0.5*rm_scale*this._scale); // Radii
         for (let i = 0; i < this.n; i++) {
             let j = i%(colors.length);
             this._pendula.push(new Pendulum(this.rs[i],colors[j]));
         }
-
+        
         this.traceList = this._traceList.slice();
     }
-
+    
     set integrationStepSize(h) {
         if (math.isNumeric(h) ) {
             this._integrationStepSize = h;
         }
     }
-
+    
     get integrationStepSize() {
         return this._integrationStepSize;
     }
-
+    
     set drawEvery(n) {
         if (math.isInteger(n) && n > 0) {
             this._drawEveryNUpdates = math.round(n);
         }
     }
-
+    
     get drawEvery() {
         return this._drawEveryNUpdates;
     }
-
+    
     set scale(scale) {
         if (this.ang) { // If scaling after started, keep current angles
             this._angles = this.ang.slice();
@@ -184,20 +184,28 @@ class Pendula {
         this.reset();
         this.draw(displayCanvas);
     }
-
+    
     get scale() {
         return this._scale;
     }
     
     set traceList(list) {
-        // Clean the trace list
-        this._traceList.length = 0;
-        this._traces.length = 0;
-        // this.posHistory.length = 0;
-        for (let i = 0; i < list.length; i++) {
-            if (list[i].isNumeric && list[i] >= 0 || list[i] < this.n) {
-                this._traceList.push(list[i]);
-                this._traces.push(new Trace(colors[list[i]],this._maxHistory));
+        // Validate
+        if (list == 'all') {
+            this.traceList = math.range(0,this.n).valueOf();
+            return;
+        }
+
+        if (list) {
+            // Clean the trace list
+            this._traceList.length = 0;
+            this._traces.length = 0;
+            // this.posHistory.length = 0;
+            for (let i = 0; i < list.length; i++) {
+                if (list[i].isNumeric && list[i] >= 0 || list[i] < this.n) {
+                    this._traceList.push(list[i]);
+                    this._traces.push(new Trace(colors[list[i]],this._maxHistory));
+                }
             }
         }
     }
@@ -221,11 +229,11 @@ class Pendula {
         this._angles = angles;
         this.reset();
     }
-
+    
     get angleList() {
         return this.ang;
     }
-
+    
     resize(canvas) {
         let minCanvasDim = math.min([canvas.height,canvas.width]);
         this.scale = this._scaleRatio * minCanvasDim/this.maxLength();
