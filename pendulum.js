@@ -97,6 +97,7 @@ class Pendula {
         this.g = g;
         
         this._angles = angles;
+        this._angleRates = Array(angles.length).fill(0);
         this._lens = lengths;
         // Scale drawings so that it occupies 90% of the canvas' height or width
         let minCanvasDim = math.min([displayCanvas.height,displayCanvas.width]);
@@ -107,6 +108,7 @@ class Pendula {
         this._traceList = [];
         this._integrationStepSize = 0.05;
         this._drawEveryNUpdates = 10;
+        this.initialEnergy = undefined;
         this.reset();
         
         this.posHistory = [];
@@ -126,14 +128,12 @@ class Pendula {
     
     reset() {
         this.n = this._angles.length;
-        this.s = math.matrix(this._angles.slice()); // State: Column vector of angles followed by their rates
-        this.s.resize([2 * this.n], 0);
+        this.s = math.matrix(this._angles.concat(this._angleRates)); // State: Column vector of angles followed by their rates
         this.ang = this.s.subset(math.index(math.range(0, this.n))).valueOf();
         this.angd = this.s.subset(math.index(math.range(this.n, 2 * this.n))).valueOf();
         let rm_scale = 15; // Proportion between mass and radius^2
         this.T = math.zeros(this.n);
         this._pendula = [];
-        this.initialEnergy = undefined;
         this._starting = true;
         
         // Add/remove lengths and masses as necessary
@@ -177,8 +177,9 @@ class Pendula {
     }
     
     set scale(scale) {
-        if (this.ang) { // If scaling after started, keep current angles
+        if (this.ang) { // If scaling after started, keep current angles and rates
             this._angles = this.ang.slice();
+            this._angleRates = this.angd.slice();
         }
         this._scale = scale;
         this.reset();
@@ -227,6 +228,8 @@ class Pendula {
     
     set angleList(angles) {
         this._angles = angles;
+        this._angleRates = Array(angles.length).fill(0);
+        this.initialEnergy = undefined;
         this.reset();
     }
     
