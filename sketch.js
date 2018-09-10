@@ -36,8 +36,8 @@ let pendulaCanvas = function(p) {
     }
     // Pause/unpause when clicking on canvas
     p.mouseClicked = function() {
-        console.log("p.mouseClicked");
-        b = !b;
+//         console.log("p.mouseClicked");
+//         b = !b;
     }
     p.windowResized = function() {
         this.resizeCanvas(window.innerWidth - 20,window.innerHeight - 40);
