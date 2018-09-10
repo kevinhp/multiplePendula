@@ -25,7 +25,7 @@ let pendulaCanvas = function(p) {
         // Create objects and start
         pl = new Pendula(angles,lengths,masses);
         pl.traceList = [pl.n-1,pl.n-2]; // Draw traces for last two pendula
-        b = true;
+        b = false;
         pl.draw(p);
     }
     p.draw = function() {
@@ -44,3 +44,12 @@ let pendulaCanvas = function(p) {
     }
 }
 let displayCanvas = new p5(pendulaCanvas,'pendulaCanvas')
+
+let playClick = function() {
+    b = !b;
+    if (b) {
+        document.getElementById("playButton").value = "Pause";
+    } else {
+        document.getElementById("playButton").value = "Play";
+    }
+}
