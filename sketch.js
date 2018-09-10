@@ -36,6 +36,7 @@ let pendulaCanvas = function(p) {
     }
     // Pause/unpause when clicking on canvas
     p.mouseClicked = function() {
+        console.log("p.mouseClicked");
         b = !b;
     }
     p.windowResized = function() {
@@ -46,6 +47,7 @@ let pendulaCanvas = function(p) {
 let displayCanvas = new p5(pendulaCanvas,'pendulaCanvas')
 
 let playClick = function() {
+    console.log("playClick");
     b = !b;
     if (b) {
         document.getElementById("playButton").value = "Pause";
