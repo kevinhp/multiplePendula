@@ -44,3 +44,12 @@ let pendulaCanvas = function(p) {
     }
 }
 let displayCanvas = new p5(pendulaCanvas,'pendulaCanvas')
+
+let playClick = function() {
+    b = !b;
+    if (b) {
+        document.getElementById("playButton").innerHTML = "Pause";
+    } else {
+        document.getElementById("playButton").innerHTML = "Play";
+    }
+}
