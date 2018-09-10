@@ -50,8 +50,8 @@ let playClick = function() {
     console.log("playClick");
     b = !b;
     if (b) {
-        document.getElementById("playButton").value = "Pause";
+        document.getElementById("playButton").innerHTML = "Pause";
     } else {
-        document.getElementById("playButton").value = "Play";
+        document.getElementById("playButton").innerHTML = "Play";
     }
 }
