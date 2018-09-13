@@ -137,14 +137,12 @@ class Pendula {
         this._starting = true;
         
         // Add/remove lengths and masses as necessary
+        let lastMass = this._masses.pop();
+        let lastLen = this._lens.pop();
         this._masses.length = this.n;
         this._lens.length = this.n;
-        while (this._lens.length < this.n) {
-            this._lens.push(this._scale*100);
-        }
-        while (this._masses.length < this.n) {
-            this._masses.push(4);
-        }
+        this._masses.fill(lastMass);
+        this._lens.fill(lastLen);
         
         // Create each pendulum and assign color for masses
         this.rs = math.multiply(math.sqrt(this._masses),0.5*rm_scale*this._scale); // Radii
