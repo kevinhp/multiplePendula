@@ -5,7 +5,8 @@ let xo;
 let yo;
 let numPend;
 let p;
-
+let wHalf;
+let hHalf;
 
 let pendulaCanvas = function(P) {
   p = P;
@@ -13,6 +14,8 @@ let pendulaCanvas = function(P) {
         
         // Set up canvas
         p.createCanvas(window.innerWidth - 20,window.innerHeight - 40);
+        wHalf = p.width/2;
+        hHalf = p.height/2;
         
         // Set gravity
         g = 1;
@@ -42,11 +45,25 @@ let pendulaCanvas = function(P) {
     }
     // Pause/unpause when clicking on canvas
     p.mouseClicked = function() {
-//         console.log("p.mouseClicked");
-//         b = !b;
+      let mx = (p.mouseX-wHalf);
+      let my = (p.mouseY-hHalf);
+      console.log("click");
+      let touched = getObjectType(mx,my);
+    }
+    p.mouseDragged = function() {
+      let mx = (p.mouseX-wHalf);
+      let my = (p.mouseY-hHalf);
+      let touched = getObjectType(mx,my);
+      console.log("drag");
+      if (touched && touched.type == "mass") {
+        pl.dragMass(touched.idx,mx,my);
+      }
+      pl.draw(p);
     }
     p.windowResized = function() {
         this.resizeCanvas(window.innerWidth - 20,window.innerHeight - 40);
+        wHalf = p.width/2;
+        hHalf = p.height/2;
         pl.resize(this);
     }
 }
@@ -75,4 +92,20 @@ let numberChanged = function() {
   
   // Create objects and start
   pl.draw(p);
+}
+
+let restart = function() {
+  pl.reset();
+  pl.draw(p);
+}
+
+let getObjectType = function(mx,my) {
+  // Check if a mass is being touched
+  for (let i = 0; i < pl.pendulumList.length; i++) {
+    let p = pl.pendulumList[i];
+    if (p.isTouching(mx,my)) {
+      return {obj: p, type: "mass", idx: i}
+    }
+  }
+  return false;
 }

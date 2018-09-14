@@ -69,6 +69,12 @@ class Pendulum {
         canvas.fill(this.massColor);
         canvas.ellipse(this.x,this.y,this.r,this.r);
     }
+
+    isTouching(mx,my) {
+      let dx = mx - this.x;
+      let dy = my - this.y;
+      return dx*dx + dy*dy - this.r*this.r < 0;
+    }
 }
 
 class Pendula {
@@ -139,10 +145,11 @@ class Pendula {
         // Add/remove lengths and masses as necessary
         let lastMass = this._masses.pop();
         let lastLen = this._lens.pop();
+        let oldn = this._masses.length;
         this._masses.length = this.n;
         this._lens.length = this.n;
-        this._masses.fill(lastMass);
-        this._lens.fill(lastLen);
+        this._masses.fill(lastMass, oldn,this.n);
+        this._lens.fill(lastLen,oldn,this.n);
         
         // Create each pendulum and assign color for masses
         this.rs = math.multiply(math.sqrt(this._masses),0.5*rm_scale*this._scale); // Radii
@@ -232,7 +239,11 @@ class Pendula {
     }
     
     get angleList() {
-        return this.ang;
+        return this._angles;
+    }
+
+    get pendulumList() {
+      return this._pendula;
     }
     
     resize(canvas) {
@@ -455,5 +466,34 @@ class Pendula {
         
         // Print to document
         document.getElementById("energy").innerHTML = "Total energy: " + totalEnergy.toFixed(6) + ", Kinetic: " + k.toFixed(6) + ", Potential: " + v.toFixed(6) + ", Change from start: " + (totalEnergy - this.initialEnergy).toFixed(6);
+    }
+
+    dragMass(i,mx,my) {
+      // Update angle and length for i-th mass
+      let dxo = mx - this._pendula[i].xo;
+      let dyo = my - this._pendula[i].yo;
+      this.ang[i] = math.atan2(dyo,dxo);
+      this.s.valueOf()[i] = this.ang[i];
+      this.s.subset(math.index(math.range(this.n, 2 * this.n))).valueOf().fill(0);
+      this._lens[i] = math.sqrt(dxo*dxo + dyo*dyo)/this._scale;
+
+      // Update angle and length of next mass, if any
+      if (i < this.ang.length-1) {
+        dxo = this._pendula[i+1].x - mx;
+        dyo = this._pendula[i+1].y - my;
+        this.ang[i+1] = math.atan2(dyo,dxo);
+        this._lens[i+1] = math.sqrt(dxo*dxo + dyo*dyo)/this._scale;
+      }
+
+      let x = [0];
+      let y = [0];
+      for (let i = 0; i < this.n; i++) {
+          x[i+1] = x[i] + this._lens[i]*math.cos(this.ang[i]);
+          y[i+1] = y[i] + this._lens[i]*math.sin(this.ang[i]);
+      }
+      for (let i = 0; i < this.n; i++) {
+        this._pendula[i].update(this._scale*x[i],this._scale*y[i],this._scale*x[i+1],this._scale*y[i+1],this.getRodColor(this.T.valueOf()[i]));
+      }
+      this._traces.map(x => x.posHistory.length = 0);
     }
 }
