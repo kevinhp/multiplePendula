@@ -313,6 +313,9 @@ class Pendula {
         // Draw trace and pendula
         this._traces.map((tr) => tr.draw(canvas));
         this._pendula.map((p) => p.draw(canvas));
+
+        // Draw menu bar
+        drawBar();
     }
     
     eulerStep(h) {

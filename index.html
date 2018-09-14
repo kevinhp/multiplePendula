@@ -3,7 +3,8 @@
     <head>
         <meta name="viewport" width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0>
         <style> body {padding: 0; margin: 0;} </style>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.0/p5.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/p5.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.7.2/addons/p5.dom.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/3.20.2/math.min.js"></script>
         <script src="sketch.js"></script>
         <script src="pendulum.js"></script>
@@ -13,7 +14,7 @@
         <div id="pendulaCanvas"></div>
         <div id="energy"></div>
         <div>
-          <button type="button" id="playButton" onclick="playClick()" >Start!</button> <input type="number" id="numPend" name="quantity" min="1" max="20" value="10" oninput="numberChanged()">
+          <button type="button" id="playButton" onclick="playClick()" >Start!</button> 
           <button type="button" id="restartButton" onclick="restart()">Restart</button>
         </div>
         <div>
