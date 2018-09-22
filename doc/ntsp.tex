@@ -1,0 +1,17 @@
+\documentclass[tikz,border=0pt]{standalone}
+  \usepackage{amsmath,amsfonts}
+  \usepackage{xspace}
+  \usepackage{xcolor}
+  \input{notation}
+
+\usetikzlibrary{quotes,angles}
+\begin{document}
+\begin{tikzpicture}
+  \draw
+    (1,0) coordinate (i) node[right] {$\ei$}
+    -- (0,0) coordinate (o) node {$O$}
+    -- (0,-1) coordinate (j) node[below] {$\ej$}
+    % pic["$\alpha$", draw=orange, <->, angle eccentricity=1.2, angle radius=1cm]
+    % {angle=a--b--c};
+\end{tikzpicture}
+\end{document}
