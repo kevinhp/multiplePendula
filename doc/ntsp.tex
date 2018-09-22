@@ -6,12 +6,43 @@
 
 \usetikzlibrary{quotes,angles}
 \begin{document}
-\begin{tikzpicture}
-  \draw
+\begin{tikzpicture}[yscale=-1]
+  \draw [<->]
     (1,0) coordinate (i) node[right] {$\ei$}
-    -- (0,0) coordinate (o) node {$O$}
-    -- (0,-1) coordinate (j) node[below] {$\ej$}
-    % pic["$\alpha$", draw=orange, <->, angle eccentricity=1.2, angle radius=1cm]
-    % {angle=a--b--c};
+    -- (0,0) coordinate (o) node[above left,inner sep=0pt] {$\vct{0}$}
+    -- (0,1) coordinate (j) node[below] {$\ej$};
+
+  \draw[very thick,brown]
+    (1.8,1.0) coordinate (ro) node[black,above right,inner sep=0pt] {$O$}
+    -- ++(75:2) coordinate (rm) node[black,above right,inner sep=2pt] {$m$} node[black,circle,inner sep=1.8pt,fill]{};
+  \draw [->,blue,thick]
+    (o) -- node[above right, inner sep=0pt]{$\ro$} (ro);
+  \draw [->,blue,thick]
+    (o) -- node[below left, inner sep=1pt]{$\vr$} (rm);
+  \draw [<->,magenta]
+    (rm)++(75:1) coordinate (er) node[right] {$\er$}
+    -- (rm) -- ++(165:1) coordinate (et) node[left] {$\et$};
+  \draw [dashed,->]
+    (ro) -- ++(1,0) coordinate (roei) node[right] {$\ei$};
+  \pic["$\theta$", draw=black, <-, angle eccentricity=1.4, angle radius=0.5cm]
+    {angle=er--ro--roei};
+
+  %% Forces
+  \draw [->,red,thick]
+    (rm) --  node[above right,inner sep=1pt] {$\vt$} ++(75:-1.2) coordinate (t);
+  \draw [->,red,thick]
+    (rm) -- ++(20:1.2) coordinate (f) node[right,inner sep=1pt] {$\vf$};
+  \draw [->,red,thick]
+    (rm) -- ++( 0,1.4) coordinate (f) node[below,inner sep=1pt] {$m\vg$};
+  %% Copy of {ei,ej} at m
+  \draw [dashed,->]
+    (rm) -- ++(1,0) coordinate (rmei) node[right] {$\ei$};
+  \draw [dashed,->]
+    (rm) -- ++(0,1) coordinate (rmej) node[left] {$\ej$};
+  \pic["$\theta$", draw=black, <-, angle eccentricity=1.4, angle radius=0.5cm]
+    {angle=er--rm--rmei};
+  \pic["$\theta$", draw=black, <-, angle eccentricity=1.4, angle radius=0.5cm]
+    {angle=et--rm--rmej};
+  
 \end{tikzpicture}
 \end{document}
