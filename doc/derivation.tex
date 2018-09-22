@@ -4,7 +4,17 @@
   \usepackage{xspace}
   \usepackage[margin=2cm]{geometry}
   \input{notation}
+
+\title{Equations of motion for multiple simple pendula connected in series}
+\author{Kevin Hernandez}
 \begin{document}
+\maketitle
+\abstract{
+  This paper shows a derivation for the equations of motion of a set of simple pendula connected in series: first pendulum has a fixed pivot, second pendulum's pivot is on the mass of the first pivot, etc. All the masses are point masses, the masses are connected to their pivots through a thin, massless rod (constant length that might be different from one another). Before going into the derivation for this problem, a simpler but related problem called here the ``\ntsp'' is solved. This initial step gives insight and helps solve the problem which is the focus of this paper.
+}  
+\section{Work in progress}
+Although the equations were derived and implemented into the code that started this GitHub repository, the write up of this document is a work in progress. I will continue working on it and, once I finish, I will remove this section.
+
 \section{The \ntsp pendulum}
 The term ``simple pendulum'' typically refers to a pendulum where the pivot is fixed, the mass is concentrated in a point (point mass) and the distance between the point mass and the pivot does not change (e.g. a thin, massless rod connects the two instead of a string). Besides gravity and the tension by the rod, there are no other forces acting.
 
@@ -91,6 +101,7 @@ We can finally solve for $\nt$ and $\ddot\theta$. From \cref{e:n3lrt}:
 \subsection{Pendula???}
 I didn't really know what word to use for the plural of pendulum. Technically, Latin words that end in the suffix \emph{um}, have their plurals to be a suffix of \emph{a} (e.g. datum/data, curriculum/curricula, pensum/pensa). I debated between \emph{pendulums} and \emph{pendula} and for some reason (maybe because Spanish is my mother tongue), \emph{pendulums} sounded weird while \emph{pendula} sounded... a bit less weird. So, I got over it; it's non-consequential for the derivation and I moved on.
 
+%================================
 \subsection{Setup}
 In case you haven't caught up with this yet, the reason I started with the \ntsp is that when you connect multiple pendula in series (i.e. the pivot of a pendulum is the point mass of the previous pendulum), then any given pendulum has a moving pivot and a force applied to its mass (the tension from the next mass). I purposefully didn't mention the ends because I figured if you're still reading then you can catch those two exceptions. Also, they are important for solving the problem so I won't ignore them in the math.
 
@@ -108,6 +119,7 @@ Similarly, we can relate $\vtk{n}$ and $\vtk{n+1}$ with $\vt$ and $\vf$ from the
 
 On the other end of the system, adjusting the units accordingly we have $\rok{1}=\vok{1}=\aok{1}=\vct{0}$ (I told you I would include them in the math).
 
+%================================
 \subsection{The tricky part}
 For the $n$-th pendulum, we can borrow from \cref{e:n3lntsp} and write:
 \begin{equation} 
@@ -131,7 +143,7 @@ and for accelerations, learning from before we can write
   \sum_{k=0}^{n}l_k \left(-\dot{\theta}_{k}^2\sin(\theta_k)+\ddot{\theta}_{k}\cos(\theta_k)\right)\ej \label{e:anij}
 \end{align}
 
-By breaking \cref{e:tnij,e:tn1ij,e:anij} into components, we have
+By breaking \cref{e:tnij,e:tn1ij,e:anij} into components, we have \todo{Code broke it into ${\ei,\ej}$ components. Change}
 \begin{gather}
   \ntk{n}\cos(\theta_{n})+\ntk{n+1}\cos(\theta_{n+1})
   =
