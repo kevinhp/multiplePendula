@@ -2,6 +2,7 @@
 %% notation
   \newcommand{\vct}{\mathbf}     % vectors
   \newcommand{\uvc}[1]{\hat{\mathbf{#1}}} % unit vectors
+  \newcommand{\dtkn}[2]{\Delta_{#1,#2}} % angle difference
   %% variables
   % unit vectors
   \newcommand{\er}{\uvc{e}_r}      % e_r
@@ -34,7 +35,21 @@
   \newcommand{\vv}{\vct{v}}        % Mass velocity
   \newcommand{\va}{\vct{a}}        % Mass acceleration
   \newcommand{\allt}{\mathbb{T}}
-  \newcommand{\allq}{\Theta}
+  \newcommand{\allq}{\vct{v}_{\theta}}
+  \newcommand{\allqd}{\vct{v}_{\dot\theta^2}}
+  \newcommand{\allqdd}{\vct{v}_{\ddot\theta}}
+  \newcommand{\ws}{\vct{w}_s}
+  \newcommand{\wc}{\vct{w}_c}
+  \newcommand{\allti}{(\mathbb{T})_{i}}
+  \newcommand{\allqi}{(\vct{v}_{\theta})_{i}}
+  \newcommand{\allqdi}{(\vct{v}_{{\dot\theta^2}})_{i}}
+  \newcommand{\allqddi}{(\vct{v}_{{\ddot\theta}})_{i}}
+  \newcommand{\wsi}{{(\vct{w}_s})_{i}}
+  \newcommand{\wci}{{(\vct{w}_c})_{i}}
+  \newcommand{\A}{A}
+  \newcommand{\B}{B}
+  \newcommand{\C}{C}
+  \newcommand{\D}{S}
   %% text
   \newcommand{\ntsp}{not-too-simple\xspace}
   %% others

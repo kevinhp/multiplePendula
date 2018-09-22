@@ -107,7 +107,7 @@ In case you haven't caught up with this yet, the reason I started with the \ntsp
 
 So, let's put the previous paragraph into math. One professor once said: 
 \begin{quote}
-  The key to any dynamics problem is to be very carefull with the position vectors, the rest will follow.
+  ``The key to any dynamics problem is to be very carefull with the position vectors, the rest will follow.''
 \end{quote}
 (it's been several years since so I'm probably paraphrasing.) I cannot stress how much this has been truth for the problems I have faced. ``The rest will follow'' might be pages and pages of math, but if you start with the position vectors carefully written any future error is a minor mistake that can be found and corrected fairly easily in comparison with tracking a poorly written position vector. That said, the best way I can come up to safely write the position vector of the $n$-th pendulum ($n=1$ refers to the first pendulum with a fixed pivot) is this:
 \begin{equation}
@@ -115,7 +115,7 @@ So, let's put the previous paragraph into math. One professor once said:
 \end{equation}
 which corresponds to going along every rod until we reach the $n$-th mass. Note that by taking the last element from the sum, we can rewrite this position in the same form as the \ntsp (\cref{e:pos}).
 
-Similarly, we can relate $\vtk{n}$ and $\vtk{n+1}$ with $\vt$ and $\vf$ from the \ntsp problem above, respectively. In the case of the last pendulum, we have $\vtk{N+1}=\vct{0}$ since there is not another pendulum connected to it (nor other non-weight forces, according to our problem statement).
+Similarly, we can relate $\vtk{n}$ and $\vtk{n+1}$ with $\vt$ and $\vf$ from the \ntsp problem above, respectively. In the case of the last pendulum, let's say the $N$-th one, we have $\vtk{N+1}=\vct{0}$ since there is not another pendulum connected to it (nor other non-weight forces, according to our problem statement).
 
 On the other end of the system, adjusting the units accordingly we have $\rok{1}=\vok{1}=\aok{1}=\vct{0}$ (I told you I would include them in the math).
 
@@ -126,52 +126,131 @@ For the $n$-th pendulum, we can borrow from \cref{e:n3lntsp} and write:
  \vtk{n}+\vtk{n+1}+m_{n}\vg=m_{n}\va_{n} 
 \end{equation}
 
-Since $\vtk{n+1}$ doesn't play nice with $\theta_k$, this time around we will use a different approach to solving for our unknowns: $\vtk{n}$ and $\ddot{\theta}_n$ for $1\le n\le N$.
+Since $\vtk{n+1}$ forms an angle of $\theta_{n+1}$ with $\ei$, then it forms an angle of $\theta_{n+1}-\theta_{n}$ with $\erk{n}$. Also, remember that our unknowns are: $\vtk{n}$ and $\ddot{\theta}_n$ for $1\le n\le N$.
 
 The next part is a bit too long for a one-line equation so I'll first write its parts and play it by ear from there. Since the tensions act along the rods, then
 \begin{align}
-  \vtk{n}&=\ntk{n}\left[\cos(\theta_n)\ei+\sin(\theta_n)\ej\right] \label{e:tnij}\\
-  \vtk{n+1}&=\ntk{n+1}\left[\cos(\theta_{n+1})\ei+\sin(\theta_{n+1})\ej\right] \label{e:tn1ij}
-\end{align}
-and for accelerations, learning from before we can write
-\begin{align}
-  \va_n&=\sum_{k=0}^{n}l_k\left[-\dot{\theta}_{k}^2\erk{k}+\ddot{\theta}_{k}\etk{k}\right]\notag\\
-  &=\sum_{k=0}^{n}l_k\left[-\dot{\theta}_{k}^2\left(\cos(\theta_k)\ei+\sin(\theta_k)\ej\right)+\ddot{\theta}_{k}\left(-\sin(\theta_k)\ei+\cos(\theta_k)\ej\right)\right]\notag\\
-  &=\sum_{k=0}^{n}l_k\left[\left(-\dot{\theta}_{k}^2\cos(\theta_k)-\ddot{\theta}_{k}\sin(\theta_k)\right)\ei+\left(-\dot{\theta}_{k}^2\sin(\theta_k)+\ddot{\theta}_{k}\cos(\theta_k)\right)\ej\right]\notag\\
-  &=\sum_{k=0}^{n}l_k \left(-\dot{\theta}_{k}^2\cos(\theta_k)-\ddot{\theta}_{k}\sin(\theta_k)\right)\ei
-  +
-  \sum_{k=0}^{n}l_k \left(-\dot{\theta}_{k}^2\sin(\theta_k)+\ddot{\theta}_{k}\cos(\theta_k)\right)\ej \label{e:anij}
+  \vtk{n}&=
+  \ntk{n}\erk{n} \label{e:tnrt}
+  \\
+  \vtk{n+1}&=
+  \ntk{n+1}\left[\cos(\theta_{n+1}-\theta_{n})\erk{n}+\sin(\theta_{n+1}-\theta_{n})\etk{n}\right] \label{e:tn1rt} 
+  \\
+  \vg&=
+  g\left[\sin(\theta_{n})\erk{n}+\cos(\theta_{n})\etk{n}\right] \label{e:grt}
+  \\
+  \va_n&=
+  \sum_{k=0}^{n}l_k\left[-\dot{\theta}_{k}^2\erk{k}+\ddot{\theta}_{k}\etk{k}\right]\label{e:anrttmp}
 \end{align}
 
-By breaking \cref{e:tnij,e:tn1ij,e:anij} into components, we have \todo{Code broke it into ${\ei,\ej}$ components. Change}
-\begin{gather}
-  \ntk{n}\cos(\theta_{n})+\ntk{n+1}\cos(\theta_{n+1})
-  =
-  m_n\sum_{k=0}^n l_k \left(-\dot{\theta}_{k}^2\cos(\theta_k)-\ddot{\theta}_{k}\sin(\theta_k)\right)
-  \label{e:n3li}
+It is a good time to point out a complication and introduce new notation that will help me write equations in a more concise manner. Notice on \cref{e:anrttmp} that we have vectors that point in different directions: all of the $\erk{k}$ form an angle $\theta_k$ with $\ei$. If we want to write $\va_n$ in ${\erk{n},\etk{n}}$, then it is important to know that $\angle(\erk{k},\erk{n})=\angle(\etk{k},\etk{n})=\theta_{k}-\theta_{n}=\dtkn{k}{n}$. Now we can rewrite \cref{e:anrttmp} as:
+\begin{align}
+  \va_n&=
+  \sum_{k=0}^{n}l_k
+  \left[
+    -\dot{\theta}_{k}^2\left(\cos(\dtkn{k}{n})\erk{n}+\sin(\dtkn{k}{n})\etk{n}\right)
+    +
+    \ddot{\theta}_{k}\left(-\sin(\dtkn{k}{n})\erk{n}+\cos(\dtkn{k}{n})\etk{n}\right)
+  \right] \notag
   \\
-  \ntk{n}\sin(\theta_{n})+\ntk{n+1}\sin(\theta_{n+1})+m_ng
+  &=
+  \sum_{k=0}^{n}l_k
+  \left[
+    \left(-\dot{\theta}_{k}^2\cos(\dtkn{k}{n})-\ddot{\theta}_{k}\sin(\dtkn{k}{n})\right)\erk{n}
+    +
+    \left(-\dot{\theta}_{k}^2\sin(\dtkn{k}{n})+\ddot{\theta}_{k}\cos(\dtkn{k}{n})\right)\etk{n}
+  \right] 
+  \label{e:anrt}
+\end{align}
+
+By breaking \cref{e:tnrt,e:tn1rt,e:grt,e:anrt} into components, we have
+\begin{gather}
+  \ntk{n}+\ntk{n+1}\cos(\dtkn{n+1}{n})+m_ng\sin(\theta_{n})
   =
-  m_n\sum_{k=0}^{n}l_k \left(-\dot{\theta}_{k}^2\sin(\theta_k)+\ddot{\theta}_{k}\cos(\theta_k)\right)
-  \label{e:n3lj}
+  m_n\sum_{k=0}^n l_k \left(-\dot{\theta}_{k}^2\cos(\dtkn{k}{n})-\ddot{\theta}_{k}\sin(\dtkn{k}{n})\right)
+  \label{e:n3lr}
+  \\
+  \ntk{n+1}\sin(\dtkn{n+1}{n})+m_ng\cos(\theta_{n})
+  =
+  m_n\sum_{k=0}^{n}l_k \left(-\dot{\theta}_{k}^2\sin(\dtkn{k}{n})+\ddot{\theta}_{k}\cos(\dtkn{k}{n})\right)
+  \label{e:n3lt}
 \end{gather}
 
-To solve \cref{e:n3li,e:n3lj}, let's define
+To solve \cref{e:n3lr,e:n3lt}, let's define vectors $\allq$, $\allqd$, $\allqdd$, $\allt$, $\wc$ and $\ws$:
+\begin{subequations}
 \begin{align}
-\allt&=
-\begin{pmatrix}
-  \ntk{1}\\
-  \ntk{2}\\
-  \vdots\\
-  \ntk{N}
-\end{pmatrix} 
-& 
-\allq&=
-\begin{pmatrix}
-  \theta_1\\
-  \theta_2\\
-  \vdots\\
-  \theta_N
-\end{pmatrix}
+  \allqi &= \theta_{i}
+  &
+  \allqdi &= \dot{\theta}_{i}^2
+  &
+  \wci &= m_ig\cos(\theta_i)
+  \\
+  \allti &= \ntk{i}
+  &
+  \allqddi &= \ddot{\theta}_{i}
+  &
+  \wsi &= m_ig\sin(\theta_i)
 \end{align}
+\label{d:vecs}
+\end{subequations}
+and matrices $\A$, $\B$, $\C$ and $\D$:
+\begin{subequations}
+\begin{align}
+  \A_{ij}&= 
+    \begin{cases}
+      1 & \text{if }i=j\\
+      \cos(\dtkn{i+1}{i}) &  \text{if }i+1=j\\
+      0 & \text{Otherwise}
+    \end{cases}
+  & 
+  \B_{ij}&=
+  \begin{cases}
+    \sin(\dtkn{i+1}{i}) &  \text{if }i+1=j\\
+    0 & \text{Otherwise}
+  \end{cases}
+  \\
+  \C_{ij}&= 
+  \begin{cases}
+    m_il_j\cos(\dtkn{j}{i}) &  \text{if }j\le i\\
+    0 & \text{Otherwise}
+  \end{cases}
+& 
+  \D_{ij}&= 
+  \begin{cases}
+    m_il_j\sin(\dtkn{j}{i}) &  \text{if }j< i\\
+    0 & \text{Otherwise}
+  \end{cases}
+\end{align}
+\label{d:mats}
+\end{subequations}
+
+Now we can write \cref{e:n3lr,e:n3lt} in vector form which makes the math easier. The system of equations is then
+\begin{align}
+  \A\allt + \ws &= -\C\allqd - \D\allqdd \label{v:r}\\
+  \B\allt + \wc &= -\D\allqd + \C\allqdd \label{v:t}
+\end{align}
+and we want to solve for $\allt$ and $\allqdd$. Left-multiplying \cref{v:r} times $\C$ and \cref{v:t} times $\D$ and adding them, we get
+\begin{gather}
+  \left(\C\A+\D\B\right)\allt+\C\ws+\D\wc=-\left(\C^2+\D^2\right)\allqd \notag\\
+  \Rightarrow \allt=-\left(\C\A+\D\B\right)^{-1}\left(\left(\C^2+\D^2\right)+\C\ws+\D\wc\right) \label{s:t}
+\end{gather}
+and substituting \cref{s:t} in \cref{v:t}
+\begin{gather}
+  -\B\left(\C\A+\D\B\right)^{-1}\left[\left(\C^2+\D^2\right)+\C\ws+\D\wc\right]+\wc = -\D\allqd + \C\allqdd \notag\\
+  \Rightarrow \allqdd =
+  \C^{-1}\left\{-\B\left(\C\A+\D\B\right)^{-1}\left[\left(\C^2+\D^2\right)+\C\ws+\D\wc\right]+\wc+\D\allqd\right\} \label{s:theta}
+\end{gather}
+\subsection{Solution}
+If the state of the system is given by $\vct{s}=[\allq^T\quad\dot{\allq}^T]^T$, then \Cref{s:theta} is the only non-obvious relationship we need to obtain the rate of change at any given instant. 
+
+The vectors and matrices definitions in \cref{d:vecs,d:mats}, with the exception of $\allqdd$ and $\allt$, can be computed from the current state $\vct{s}$ of the system and the specified parameters (value of $g$, the lengths $l_k$ and the masses $m_k$ of each pendulum).
+
+Once $\A$, $\B$, $\C$, $\D$, $\wc$, $\ws$ and $\allqd$ are constructed, \cref{s:theta} can be used in an implicit integrator (e.g. Euler, RK45, etc.) to obtain the state at a later time.
+
+\section{Observations}
+Although Euler performs well for relatively wide angles for one pendulum, it underperforms for anything other than small angles for multiple pendula. I think part of the reason is that wider angles for multiple pendula can lead to a larger transfer of energy to the lower pendula in the form of kinetic energy. Once these are moving faster, then the simple rates of rates assumed by the Euler method are not good approximations.
+
+For several pendula and large angles, RK45 can still underperform in some instances when situations like the one described above occur at an extreme. Despite that, it seems to still hold on reasonably well for short term simulations if accuracy of several digits is not a goal.
+
+As with any simulation that relies on integrators, higher order methods could be implemented if accuracy is desired and it is OK for simulation speed to be trade off to achieve it.
 \end{document}
