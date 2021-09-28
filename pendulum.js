@@ -141,6 +141,7 @@ class Pendula {
         this.T = math.zeros(this.n);
         this._pendula = [];
         this._starting = true;
+        this.initialEnergy = undefined;
         
         // Add/remove lengths and masses as necessary
         let lastMass = this._masses.pop();

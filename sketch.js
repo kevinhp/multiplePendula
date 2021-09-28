@@ -100,6 +100,7 @@ let numberChanged = function() {
   pl.traceList = newTraceList;
   
   // Create objects and start
+  pl.reset();
   pl.draw(p);
 }
 
