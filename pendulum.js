@@ -468,9 +468,9 @@ class Pendula {
         }
         
         // Print to document
-        relChange = 0;
+        let relChange = 0;
         if (this.initialEnergy != 0) {
-          (totalEnergy - this.initialEnergy)/this.initialEnergy;
+          relChange = (totalEnergy - this.initialEnergy)/this.initialEnergy;
         }
         document.getElementById("energy").innerHTML = "Total energy: " + totalEnergy.toFixed(6) + ", Kinetic: " + k.toFixed(6) + ", Potential: " + v.toFixed(6) + ", Change from start: " + relChange.toFixed(6);
     }
