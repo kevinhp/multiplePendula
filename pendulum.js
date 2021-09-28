@@ -306,7 +306,7 @@ class Pendula {
             }
             for (let i = 0; i < this.n; i++) {
                 this._pendula[i].update(this._scale*x[i],this._scale*y[i],this._scale*x[i+1],this._scale*y[i+1],this.getRodColor(this.T.valueOf()[i]));
-            }            
+            }
             this.getEnergy(y);
         }
         
@@ -468,7 +468,11 @@ class Pendula {
         }
         
         // Print to document
-        document.getElementById("energy").innerHTML = "Total energy: " + totalEnergy.toFixed(6) + ", Kinetic: " + k.toFixed(6) + ", Potential: " + v.toFixed(6) + ", Change from start: " + (totalEnergy - this.initialEnergy).toFixed(6);
+        relChange = 0;
+        if (this.initialEnergy != 0) {
+          (totalEnergy - this.initialEnergy)/this.initialEnergy;
+        }
+        document.getElementById("energy").innerHTML = "Total energy: " + totalEnergy.toFixed(6) + ", Kinetic: " + k.toFixed(6) + ", Potential: " + v.toFixed(6) + ", Change from start: " + relChange.toFixed(6);
     }
 
     dragMass(i,mx,my) {
