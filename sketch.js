@@ -96,6 +96,9 @@ let numberChanged = function() {
   angles.length = newNum;
   angles.fill(lastAngle,oldNum,newNum);
   newTraceList = pl.traceList.filter(idx => idx <= newNum);
+  if (newTraceList.length == 0) {
+    newTraceList = [newNum - 1, newNum];
+  }
   pl.angleList = angles;
   pl.traceList = newTraceList;
   
