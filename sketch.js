@@ -1,13 +1,4 @@
-let g;  // gravity
-let pl; // pendulum list
-let b;  // bool to pause/unpause with clicks on the canvas
-let xo;
-let yo;
-let maxPend = 20;
-let numPend;
-let p;
-let wHalf;
-let hHalf;
+
 
 let pendulaCanvas = function(P) {
   p = P;
@@ -18,8 +9,6 @@ let pendulaCanvas = function(P) {
         wHalf = p.width/2;
         hHalf = p.height/2;
         
-        // Set gravity
-        g = 1;
         
         // Set initial angles, lengths and masses (angles.length determines the number of pendula)
         // 4 medium pendula example:
