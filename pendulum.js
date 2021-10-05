@@ -504,4 +504,24 @@ class Pendula {
       }
       this._traces.map(x => x.posHistory.length = 0);
     }
+
+    forWorker() {
+      let workerDS = {};
+      workerDS['lengths']    = this._lens;
+      workerDS['masses']     = this._masses;
+      workerDS['angles']     = this._angles;
+      workerDS['angleRates'] = this._angleRates;
+      return workerDS;
+    }
+
+    fromWorker(workerDS) {
+      this._lens       = workerDS['lengths'];
+      this._masses     = workerDS['masses'];
+      this._angles     = workerDS['angles'];
+      this._angleRates = workerDS['angleRates'];
+      this._kinetic    = workerDS['kinetic'];
+      this._potential  = workerDS['potential'];
+      this._total      = workerDS['total'];
+    }
+
 }
