@@ -1,6 +1,7 @@
 class Pendulum {
   constructor(radius) {
       this.r = radius;
+      this.rSquare = this.r*this.r;
   }
   
   update(xo,yo,x,y) {
@@ -9,57 +10,22 @@ class Pendulum {
       this.x = x;
       this.y = y;
   }
-  
-  isTouching(mx,my) {
-    let dx = mx - this.x;
-    let dy = my - this.y;
-    return dx*dx + dy*dy - this.r*this.r < 0;
-  }
 }
 
 class Pendula {
-  constructor(angles,lengths,masses) {
-      if (!angles) {
-          angles = [Math.PI/4,Math.PI/8];
-          lengths = [100,100];
-          masses = [2,2];
-      }
-      if (!lengths || lengths.length < angles.length) {
-          console.log("Not enough lengths given. Filling with length 50.");
-          while (lengths.length < angles.length) {
-              lengths.push(50);
-          }
-      }
-      if (!masses || masses.length < angles.length) {
-          console.log("Not enough masses given. Filling with unit masses.");
-          while (masses.length < angles.length) {
-              masses.push(1);
-          }
-      }
-      if (!g) {
-          this.g = 1;
-      }
+  constructor(lengths,masses,angles,angleRates) {
       
       this.g = g;
       
       this._angles = angles;
-      this._angleRates = Array(angles.length).fill(0);
-      this._lens = lengths;
-      // Scale drawings so that it occupies 90% of the canvas' height or width
-      let minCanvasDim = math.min([displayCanvas.height,displayCanvas.width]);
-      this._scale = 0.45*minCanvasDim/this.maxLength(); // Change only drawing length scale, not physics scale
-      this._scaleRatio = this._scale*this.maxLength()/minCanvasDim;
+      this._angleRates = angleRates;
+      this._lengths = lengths;
       this._masses = masses;
       this._integrationStepSize = 0.05;
       this.initialEnergy = undefined;
       this.reset();
       
-      this.integrateStep = this.rk4Step;
-      
-  }
-  
-  maxLength() {
-      return this._lens.reduce((a,v) => a+v);
+      this.integrateStep = this.rk4Step;      
   }
   
   reset() {
@@ -74,12 +40,12 @@ class Pendula {
       
       // Add/remove lengths and masses as necessary
       let lastMass = this._masses.pop();
-      let lastLen = this._lens.pop();
+      let lastLen = this._lengths.pop();
       let oldn = this._masses.length;
       this._masses.length = this.n;
-      this._lens.length = this.n;
+      this._lengths.length = this.n;
       this._masses.fill(lastMass, oldn,this.n);
-      this._lens.fill(lastLen,oldn,this.n);
+      this._lengths.fill(lastLen,oldn,this.n);
       
       // Create each pendulum and assign color for masses
       this.rs = math.multiply(math.sqrt(this._masses),0.5*rm_scale*this._scale); // Radii
@@ -97,32 +63,7 @@ class Pendula {
   get integrationStepSize() {
       return this._integrationStepSize;
   }
-  
-  set scale(scale) {
-      if (this.ang) { // If scaling after started, keep current angles and rates
-          this._angles = this.ang.slice();
-          this._angleRates = this.angd.slice();
-      }
-      this._scale = scale;
-      this.reset();
-  }
-  
-  get scale() {
-      return this._scale;
-  }
-  
-  
-  set angleList(angles) {
-      this._angles = angles;
-      this._angleRates = Array(angles.length).fill(0);
-      this.initialEnergy = undefined;
-      this.reset();
-  }
-  
-  get angleList() {
-      return this._angles;
-  }
-
+   
   get pendulumList() {
     return this._pendula;
   }
@@ -220,10 +161,10 @@ class Pendula {
       
       // Fill matrices
       for (let i = 0; i < this.n; ++i) {
-          A.subset(math.index(i,i),this._lens[i]*this._masses[i]);
+          A.subset(math.index(i,i),this._lengths[i]*this._masses[i]);
           for (let j = 0; j < i; ++j) {
-              A.subset(math.index(i,j),this._lens[j]*this._masses[i]*math.cos(ang[j] - ang[i]));
-              B.subset(math.index(i,j),this._lens[j]*this._masses[i]*math.sin(ang[j] - ang[i]));
+              A.subset(math.index(i,j),this._lengths[j]*this._masses[i]*math.cos(ang[j] - ang[i]));
+              B.subset(math.index(i,j),this._lengths[j]*this._masses[i]*math.sin(ang[j] - ang[i]));
           }
           C.subset(math.index(i,i),-1);
           if (i < this.n-1) { 
@@ -284,8 +225,8 @@ class Pendula {
           let sumr = 0; // Radial component of velocity
           let sumq = 0; // Tangential component of velocity
           for (let j = 0; j <= i; j++) {
-              sumr += this._lens[j]*this.angd[j]*math.sin(this.ang[j] - this.ang[i]);
-              sumq += this._lens[j]*this.angd[j]*math.cos(this.ang[j] - this.ang[i]);
+              sumr += this._lengths[j]*this.angd[j]*math.sin(this.ang[j] - this.ang[i]);
+              sumq += this._lengths[j]*this.angd[j]*math.cos(this.ang[j] - this.ang[i]);
           }
           k += 0.5*this._masses[i]*(sumr*sumr + sumq*sumq);
           v -= this._masses[i]*this.g*y[i+1]; // Negative since y points down
@@ -306,16 +247,13 @@ class Pendula {
     let x = [0];
     let y = [0];
     for (let i = 0; i < this.n; i++) {
-        x[i+1] = x[i] + this._lens[i]*math.cos(this.ang[i]);
-        y[i+1] = y[i] + this._lens[i]*math.sin(this.ang[i]);
+        x[i+1] = x[i] + this._lengths[i]*math.cos(this.ang[i]);
+        y[i+1] = y[i] + this._lengths[i]*math.sin(this.ang[i]);
     }
     
     // b = true: pendula in action. b = false: pendula paused
     // Update trace and energy only if pendula are in action (or it's first frame)
     if (b || this._starting) {
-        for (let i = 0; i < this.n; i++) {
-            this._pendula[i].update(this._scale*x[i],this._scale*y[i],this._scale*x[i+1],this._scale*y[i+1]);
-        }
         this.getEnergy(y);
     }
     
