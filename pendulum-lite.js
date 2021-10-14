@@ -1,20 +1,16 @@
-class Pendulum {
-  constructor(radius) {
-      this.r = radius;
-      this.rSquare = this.r*this.r;
-  }
-  
-  update(xo,yo,x,y) {
-      this.xo = xo;
-      this.yo = yo;
-      this.x = x;
-      this.y = y;
-  }
+let Physics;
+
+function getFromMain(blob) {
+  let lengths    = blob.lengths;
+  let masses     = blob.masses;
+  let angles     = blob.angles;
+  let angleRates = blob.angleRates;
+  Physics = new PendulaPhysics(lengths,masses,angles,angleRates);
+  Physics.getEnergy();
 }
 
-class Pendula {
+class PendulaPhysics {
   constructor(lengths,masses,angles,angleRates) {
-      
       this.g = g;
       
       this._angles = angles;
@@ -46,13 +42,7 @@ class Pendula {
       this._lengths.length = this.n;
       this._masses.fill(lastMass, oldn,this.n);
       this._lengths.fill(lastLen,oldn,this.n);
-      
-      // Create each pendulum and assign color for masses
-      this.rs = math.multiply(math.sqrt(this._masses),0.5*rm_scale*this._scale); // Radii
-      for (let i = 0; i < this.n; i++) {
-          this._pendula.push(new Pendulum(this.rs[i]));
-      }
-  }
+    }
   
   set integrationStepSize(h) {
       if (math.isNumeric(h) ) {
